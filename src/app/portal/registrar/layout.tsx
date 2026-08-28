@@ -14,7 +14,7 @@ const NAV: NavItem[] = [
 export default async function RegistrarLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("registrar");
   return (
-    <PortalShell title="Registrar" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Registrar" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

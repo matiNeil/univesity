@@ -7,7 +7,7 @@ const NAV: NavItem[] = [{ href: "/portal/faculty", label: "Overview", icon: <Lan
 export default async function FacultyLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("faculty");
   return (
-    <PortalShell title="Faculty Portal" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Faculty Portal" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

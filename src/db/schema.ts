@@ -69,13 +69,62 @@ export const allocationStatusEnum = pgEnum("allocation_status", [
 
 // ---------- Identity ----------
 
-export const users = pgTable("users", {
-  id: text("id").primaryKey(), // Clerk user id
-  email: text("email").notNull(),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
-  role: roleEnum("role"),
+export const users = pgTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    firstName: text("first_name"),
+    lastName: text("last_name"),
+    role: roleEnum("role").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("users_email_idx").on(t.email)]
+);
+
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Pre-provisioned rosters the registrar/HR loads ahead of time. A student or
+// lecturer proves they match a row here (registration/staff number + national
+// ID + university email) to activate their account and set their own password.
+export const studentRegistry = pgTable("student_registry", {
+  id: text("id").primaryKey(),
+  registrationNumber: text("registration_number").notNull().unique(),
+  nationalId: text("national_id").notNull(),
+  universityEmail: text("university_email").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  programId: text("program_id")
+    .notNull()
+    .references(() => programs.id),
+  yearOfStudy: integer("year_of_study").notNull().default(1),
+  activatedUserId: text("activated_user_id")
+    .references(() => users.id)
+    .unique(),
+});
+
+export const lecturerRegistry = pgTable("lecturer_registry", {
+  id: text("id").primaryKey(),
+  staffNumber: text("staff_number").notNull().unique(),
+  nationalId: text("national_id").notNull(),
+  universityEmail: text("university_email").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  departmentId: text("department_id")
+    .notNull()
+    .references(() => departments.id),
+  title: text("title"),
+  activatedUserId: text("activated_user_id")
+    .references(() => users.id)
+    .unique(),
 });
 
 // ---------- Academic structure ----------

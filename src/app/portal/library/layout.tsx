@@ -9,7 +9,7 @@ const NAV: NavItem[] = [
 export default async function LibraryLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("library");
   return (
-    <PortalShell title="Library" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Library" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

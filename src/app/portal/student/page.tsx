@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { getAppUser } from "@/lib/session";
 import { getDb } from "@/db";
 import { clearances, courses, enrollments, invoices, programs, students } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CLEARANCE_TYPES } from "@/lib/clearance";
 
 export default async function StudentOverviewPage() {
-  const { userId } = await auth();
+  const appUser = await getAppUser();
+  const userId = appUser!.id;
   const db = getDb();
 
   const [student] = await db

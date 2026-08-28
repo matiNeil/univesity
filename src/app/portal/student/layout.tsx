@@ -10,7 +10,7 @@ const NAV: NavItem[] = [
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("student");
   return (
-    <PortalShell title="Student Portal" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Student Portal" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -17,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gopito University",
-    template: "%s · Gopito University",
+    default: "UniSmart",
+    template: "%s · UniSmart",
   },
   description: "University Management System — student, staff, and graduation portals.",
   robots: { index: false, follow: false },
@@ -33,10 +32,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ClerkProvider>
-            {children}
-            <Toaster />
-          </ClerkProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { getAppUser } from "@/lib/session";
 import { getDb } from "@/db";
 import { courses, enrollments, lecturerCourses, lecturers } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 
 export default async function LecturerPage() {
-  const { userId } = await auth();
+  const appUser = await getAppUser();
+  const userId = appUser!.id;
   const db = getDb();
 
   const [lecturer] = await db.select().from(lecturers).where(eq(lecturers.userId, userId!)).limit(1);

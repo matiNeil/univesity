@@ -9,7 +9,7 @@ const NAV: NavItem[] = [
 export default async function AccommodationLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("accommodation");
   return (
-    <PortalShell title="Accommodation" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Accommodation" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

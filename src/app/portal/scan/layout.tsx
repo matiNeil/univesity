@@ -7,7 +7,7 @@ const NAV: NavItem[] = [{ href: "/portal/scan", label: "Scanner", icon: <QrCode 
 export default async function ScanLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("scan");
   return (
-    <PortalShell title="Graduation Scanner" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Graduation Scanner" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );

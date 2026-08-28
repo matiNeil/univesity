@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAppUser } from "@/lib/session";
 import { getDb } from "@/db";
 import {
   clearances,
@@ -16,7 +16,8 @@ import { CLEARANCE_TYPES } from "@/lib/clearance";
 import { VisitorForm } from "./visitor-form";
 
 export default async function StudentGraduationPage() {
-  const { userId } = await auth();
+  const appUser = await getAppUser();
+  const userId = appUser!.id;
   const db = getDb();
 
   const [ceremony] = await db.select().from(graduationCeremonies).orderBy(asc(graduationCeremonies.ceremonyDate)).limit(1);

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { getAppUser } from "@/lib/session";
 import { getDb } from "@/db";
 import { graduationApplications, graduationPasses, graduationVisitors } from "@/db/schema";
 import { newId } from "@/lib/id";
@@ -14,8 +14,9 @@ export async function registerVisitor(
   _prevState: RegisterVisitorState,
   formData: FormData
 ): Promise<RegisterVisitorState> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not authenticated" };
+  const appUser = await getAppUser();
+  if (!appUser) return { error: "Not authenticated" };
+  const userId = appUser.id;
 
   const applicationId = formData.get("applicationId") as string;
   const fullName = (formData.get("fullName") as string)?.trim();

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { getAppUser } from "@/lib/session";
 import { getDb } from "@/db";
 import {
   graduationApplications,
@@ -12,14 +12,13 @@ import {
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { newId } from "@/lib/id";
-import type { Role } from "@/lib/roles";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const appUser = await getAppUser();
+  if (!appUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = appUser.id;
 
-  const user = await currentUser();
-  const role = (user?.publicMetadata as { role?: Role } | null)?.role;
+  const role = appUser.role;
   if (role !== "graduation_staff" && role !== "registrar" && role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

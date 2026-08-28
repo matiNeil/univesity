@@ -2,13 +2,13 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
-import { GraduationCap, Menu } from "lucide-react";
+import { GraduationCap, LogOut, Menu } from "lucide-react";
 import { ROLE_LABELS, type Role } from "@/lib/roles";
 import { PortalNav } from "@/components/portal-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { logout } from "@/lib/auth-actions";
 
 export type NavItem = { href: string; label: string; icon: ReactNode };
 
@@ -31,7 +31,7 @@ export function PortalShell({
         <GraduationCap className="size-5 text-primary" />
         <div>
           <Link href="/" className="font-semibold">
-            Gopito University
+            UniSmart
           </Link>
           <p className="text-xs text-muted-foreground">{title}</p>
         </div>
@@ -73,7 +73,11 @@ export function PortalShell({
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden text-sm text-muted-foreground sm:inline">{ROLE_LABELS[role]}</span>
             <ThemeToggle />
-            <UserButton />
+            <form action={logout}>
+              <Button type="submit" variant="ghost" size="icon" aria-label="Log out">
+                <LogOut className="size-4" />
+              </Button>
+            </form>
           </div>
         </header>
         <main className="flex-1 overflow-x-auto p-4 sm:p-6">{children}</main>

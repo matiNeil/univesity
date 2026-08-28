@@ -1,5 +1,5 @@
 {
-  "name": "univesity",
+  "name": "unismart",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,6 @@
     "db:seed": "dotenv -e .env.local -- tsx src/db/seed.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.7.7",
     "@neondatabase/serverless": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

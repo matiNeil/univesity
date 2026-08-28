@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
+import { getAppUser } from "@/lib/session";
 import Link from "next/link";
 import { getDb } from "@/db";
 import { courses, enrollments, lecturerCourses, students, users } from "@/db/schema";
@@ -14,7 +14,8 @@ const GRADES = ["A", "B", "C", "D", "F", "I", "W"];
 
 export default async function LecturerClassListPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const { userId } = await auth();
+  const appUser = await getAppUser();
+  const userId = appUser!.id;
   const db = getDb();
 
   const [assignment] = await db

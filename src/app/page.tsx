@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { currentUser } from "@clerk/nextjs/server";
+import { getAppUser } from "@/lib/session";
 import {
   GraduationCap,
   Users2,
@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PORTALS, defaultPortalForRole, type Role } from "@/lib/roles";
+import { PORTALS, defaultPortalForRole } from "@/lib/roles";
 
 const FEATURES = [
   {
@@ -51,9 +51,8 @@ const PORTAL_ICONS: Record<string, typeof GraduationCap> = {
 };
 
 export default async function Home() {
-  const user = await currentUser();
-  const role = (user?.publicMetadata as { role?: Role } | null)?.role;
-  const primaryHref = !user ? "/sign-in" : role ? defaultPortalForRole(role) : "/onboarding";
+  const user = await getAppUser();
+  const primaryHref = user ? defaultPortalForRole(user.role) : "/sign-in";
 
   return (
     <div className="flex flex-1 flex-col bg-background">
@@ -61,7 +60,7 @@ export default async function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <span className="flex items-center gap-2 text-lg font-semibold">
             <GraduationCap className="size-5 text-primary" />
-            Gopito University
+            UniSmart
           </span>
           <nav className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
@@ -70,7 +69,7 @@ export default async function Home() {
             </Button>
             {!user && (
               <Button asChild>
-                <Link href="/sign-up">Sign up</Link>
+                <Link href="/activate">Activate account</Link>
               </Button>
             )}
           </nav>
@@ -140,7 +139,7 @@ export default async function Home() {
 
       <footer className="border-t">
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-2 px-6 py-6 text-xs text-muted-foreground sm:grid-cols-3 sm:gap-0">
-          <span>© {new Date().getFullYear()} Gopito University</span>
+          <span>© {new Date().getFullYear()} UniSmart</span>
           <span className="text-center">
             Powered by{" "}
             <span className="font-semibold">
@@ -148,7 +147,7 @@ export default async function Home() {
               <span className="text-red-600 dark:text-red-500">StackX</span>
             </span>
           </span>
-          <span className="sm:text-right">Built on Next.js, Clerk & Neon</span>
+          <span className="sm:text-right">Built on Next.js & Neon</span>
         </div>
       </footer>
     </div>

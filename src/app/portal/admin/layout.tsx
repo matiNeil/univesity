@@ -10,7 +10,7 @@ const NAV: NavItem[] = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("admin");
   return (
-    <PortalShell title="Executive Dashboard" role={appUser.role!} navItems={NAV}>
+    <PortalShell title="Executive Dashboard" role={appUser.role} navItems={NAV}>
       {children}
     </PortalShell>
   );
