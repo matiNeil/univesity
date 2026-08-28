@@ -6,6 +6,7 @@ import {
   pgEnum,
   uniqueIndex,
   numeric,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -67,6 +68,12 @@ export const allocationStatusEnum = pgEnum("allocation_status", [
   "cancelled",
 ]);
 
+export const attendanceStatusEnum = pgEnum("attendance_status", [
+  "present",
+  "absent",
+  "late",
+]);
+
 // ---------- Identity ----------
 
 export const users = pgTable(
@@ -89,6 +96,24 @@ export const sessions = pgTable("sessions", {
     .notNull()
     .references(() => users.id),
   expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Every sign-in and activation-verify attempt, used to rate-limit brute-forcing.
+export const loginAttempts = pgTable("login_attempts", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  success: boolean("success").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -152,6 +177,7 @@ export const programs = pgTable("programs", {
   departmentId: text("department_id")
     .notNull()
     .references(() => departments.id),
+  totalCreditsRequired: integer("total_credits_required").notNull().default(120),
 });
 
 export const courses = pgTable("courses", {
@@ -163,6 +189,25 @@ export const courses = pgTable("courses", {
     .notNull()
     .references(() => departments.id),
 });
+
+export const requirementCategoryEnum = pgEnum("requirement_category", ["core", "elective"]);
+
+// The curriculum for a program: which courses a student must (or may) take.
+// Distinct from `courses.departmentId`, which just says who teaches a course.
+export const programRequirements = pgTable(
+  "program_requirements",
+  {
+    id: text("id").primaryKey(),
+    programId: text("program_id")
+      .notNull()
+      .references(() => programs.id),
+    courseId: text("course_id")
+      .notNull()
+      .references(() => courses.id),
+    category: requirementCategoryEnum("category").notNull().default("core"),
+  },
+  (t) => [uniqueIndex("program_requirement_program_course_idx").on(t.programId, t.courseId)]
+);
 
 export const students = pgTable("students", {
   userId: text("user_id")
@@ -217,6 +262,45 @@ export const enrollments = pgTable(
   },
   (t) => [uniqueIndex("enrollment_student_course_semester_idx").on(t.studentId, t.courseId, t.semester)]
 );
+
+// Weekly recurring timetable slots for a course offering. Department-managed.
+export const classSessions = pgTable("class_sessions", {
+  id: text("id").primaryKey(),
+  courseId: text("course_id")
+    .notNull()
+    .references(() => courses.id),
+  semester: text("semester").notNull(),
+  dayOfWeek: integer("day_of_week").notNull(), // 0 = Sunday .. 6 = Saturday
+  startTime: text("start_time").notNull(), // "09:00"
+  endTime: text("end_time").notNull(), // "10:30"
+  venue: text("venue"),
+});
+
+export const attendanceRecords = pgTable(
+  "attendance_records",
+  {
+    id: text("id").primaryKey(),
+    enrollmentId: text("enrollment_id")
+      .notNull()
+      .references(() => enrollments.id),
+    date: text("date").notNull(), // "2026-08-28"
+    status: attendanceStatusEnum("status").notNull().default("present"),
+    markedAt: timestamp("marked_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("attendance_enrollment_date_idx").on(t.enrollmentId, t.date)]
+);
+
+export const tutorAssignments = pgTable("tutor_assignments", {
+  id: text("id").primaryKey(),
+  studentId: text("student_id")
+    .notNull()
+    .references(() => students.userId)
+    .unique(),
+  lecturerId: text("lecturer_id")
+    .notNull()
+    .references(() => lecturers.userId),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+});
 
 // ---------- Clearance & Graduation ----------
 

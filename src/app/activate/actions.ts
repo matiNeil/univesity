@@ -9,6 +9,7 @@ import { hashPassword } from "@/lib/password";
 import { createSession } from "@/lib/session";
 import { newId } from "@/lib/id";
 import { defaultPortalForRole } from "@/lib/roles";
+import { isRateLimited, recordAttempt, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
 
 export type VerifyState = { error?: string; token?: string; name?: string };
 export type ActivateState = { error?: string };
@@ -25,6 +26,10 @@ export async function verifyStudent(_prevState: VerifyState, formData: FormData)
     return { error: "Please fill in all fields." };
   }
 
+  if (await isRateLimited(registrationNumber)) {
+    return { error: RATE_LIMIT_MESSAGE };
+  }
+
   const db = getDb();
   const [record] = await db
     .select()
@@ -37,6 +42,7 @@ export async function verifyStudent(_prevState: VerifyState, formData: FormData)
     record.nationalId !== nationalId ||
     record.universityEmail.toLowerCase() !== universityEmail
   ) {
+    await recordAttempt(registrationNumber, false);
     return { error: VERIFY_ERROR };
   }
 
@@ -44,6 +50,7 @@ export async function verifyStudent(_prevState: VerifyState, formData: FormData)
     return { error: "This account has already been activated. Try signing in instead." };
   }
 
+  await recordAttempt(registrationNumber, true);
   const token = signActivationToken({ kind: "student", registryId: record.id });
   return { token, name: `${record.firstName} ${record.lastName}` };
 }
@@ -55,6 +62,10 @@ export async function verifyLecturer(_prevState: VerifyState, formData: FormData
 
   if (!staffNumber || !nationalId || !universityEmail) {
     return { error: "Please fill in all fields." };
+  }
+
+  if (await isRateLimited(staffNumber)) {
+    return { error: RATE_LIMIT_MESSAGE };
   }
 
   const db = getDb();
@@ -69,6 +80,7 @@ export async function verifyLecturer(_prevState: VerifyState, formData: FormData
     record.nationalId !== nationalId ||
     record.universityEmail.toLowerCase() !== universityEmail
   ) {
+    await recordAttempt(staffNumber, false);
     return { error: VERIFY_ERROR };
   }
 
@@ -76,6 +88,7 @@ export async function verifyLecturer(_prevState: VerifyState, formData: FormData
     return { error: "This account has already been activated. Try signing in instead." };
   }
 
+  await recordAttempt(staffNumber, true);
   const token = signActivationToken({ kind: "lecturer", registryId: record.id });
   return { token, name: `${record.firstName} ${record.lastName}` };
 }

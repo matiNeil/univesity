@@ -7,6 +7,7 @@ import { lecturers, students, users } from "@/db/schema";
 import { createSession } from "@/lib/session";
 import { verifyPassword } from "@/lib/password";
 import { defaultPortalForRole } from "@/lib/roles";
+import { isRateLimited, recordAttempt, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
 
 export type LoginState = { error?: string };
 
@@ -45,13 +46,24 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     return { error: "Please fill in both fields." };
   }
 
+  if (await isRateLimited(identifier)) {
+    return { error: RATE_LIMIT_MESSAGE };
+  }
+
   const db = getDb();
   const user = await findUserByIdentifier(db, identifier);
-  if (!user) return { error: GENERIC_ERROR };
+  if (!user) {
+    await recordAttempt(identifier, false);
+    return { error: GENERIC_ERROR };
+  }
 
   const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) return { error: GENERIC_ERROR };
+  if (!valid) {
+    await recordAttempt(identifier, false);
+    return { error: GENERIC_ERROR };
+  }
 
+  await recordAttempt(identifier, true);
   await createSession(user.id);
   redirect(defaultPortalForRole(user.role));
 }

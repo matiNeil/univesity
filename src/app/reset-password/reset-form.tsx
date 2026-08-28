@@ -1,0 +1,31 @@
+"use client";
+
+import { useActionState } from "react";
+import { resetPassword, type ResetPasswordState } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+const initialState: ResetPasswordState = {};
+
+export function ResetForm({ token }: { token: string }) {
+  const [state, formAction, pending] = useActionState(resetPassword, initialState);
+
+  return (
+    <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="token" value={token} />
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="password">New password</Label>
+        <Input id="password" name="password" type="password" required minLength={8} autoFocus />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="confirmPassword">Confirm new password</Label>
+        <Input id="confirmPassword" name="confirmPassword" type="password" required minLength={8} />
+      </div>
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      <Button type="submit" disabled={pending} className="mt-2">
+        {pending ? "Resetting…" : "Reset password"}
+      </Button>
+    </form>
+  );
+}

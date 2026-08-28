@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { login, type LoginState } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,12 @@ export function LoginForm() {
         <Input id="identifier" name="identifier" placeholder="e.g. R230123 or you@university.edu" required autoFocus />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          <Link href="/forgot-password" className="text-xs text-muted-foreground hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <Input id="password" name="password" type="password" required />
       </div>
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

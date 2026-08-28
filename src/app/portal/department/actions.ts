@@ -1,7 +1,7 @@
 "use server";
 
 import { getDb } from "@/db";
-import { enrollments, lecturerCourses } from "@/db/schema";
+import { enrollments, lecturerCourses, tutorAssignments } from "@/db/schema";
 import { newId } from "@/lib/id";
 import { requirePortal } from "@/lib/require-portal";
 import { revalidatePath } from "next/cache";
@@ -57,6 +57,29 @@ export async function assignLecturer(
     .returning();
 
   if (!inserted) return { error: "That lecturer is already assigned to this course for this semester." };
+
+  revalidatePath("/portal/department");
+  return { success: true };
+}
+
+export async function assignTutor(
+  _prevState: DepartmentActionState,
+  formData: FormData
+): Promise<DepartmentActionState> {
+  await requirePortal("department");
+
+  const studentId = formData.get("studentId") as string;
+  const lecturerId = formData.get("lecturerId") as string;
+
+  if (!studentId || !lecturerId) {
+    return { error: "Please select a student and a lecturer." };
+  }
+
+  const db = getDb();
+  await db
+    .insert(tutorAssignments)
+    .values({ id: newId("tut"), studentId, lecturerId })
+    .onConflictDoUpdate({ target: tutorAssignments.studentId, set: { lecturerId, assignedAt: new Date() } });
 
   revalidatePath("/portal/department");
   return { success: true };

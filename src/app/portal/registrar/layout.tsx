@@ -1,5 +1,6 @@
 import { Users, GraduationCap } from "lucide-react";
 import { requirePortal } from "@/lib/require-portal";
+import { getAnnouncementsForRole } from "@/lib/announcements";
 import { PortalShell, type NavItem } from "@/components/portal-shell";
 
 const NAV: NavItem[] = [
@@ -13,8 +14,9 @@ const NAV: NavItem[] = [
 
 export default async function RegistrarLayout({ children }: { children: React.ReactNode }) {
   const appUser = await requirePortal("registrar");
+  const announcements = await getAnnouncementsForRole(appUser.role);
   return (
-    <PortalShell title="Registrar" role={appUser.role} navItems={NAV}>
+    <PortalShell title="Registrar" role={appUser.role} navItems={NAV} announcements={announcements}>
       {children}
     </PortalShell>
   );

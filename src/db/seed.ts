@@ -6,6 +6,7 @@ import {
   faculties,
   graduationCeremonies,
   lecturerRegistry,
+  programRequirements,
   programs,
   rooms,
   studentRegistry,
@@ -42,7 +43,7 @@ async function main() {
     .values({ id: newId("dept"), name: "Department of English", code: "ENG", facultyId: fh.id })
     .returning();
 
-  const [bsccs, bscmath] = await db
+  const [bsccs, bscmath, baeng] = await db
     .insert(programs)
     .values([
       { id: newId("prog"), name: "BSc Computer Science", code: "BSCCS", degreeLevel: "Bachelor", departmentId: cs.id },
@@ -51,12 +52,25 @@ async function main() {
     ])
     .returning();
 
-  await db.insert(courses).values([
-    { id: newId("crs"), code: "CS101", title: "Introduction to Programming", credits: 3, departmentId: cs.id },
-    { id: newId("crs"), code: "CS201", title: "Data Structures & Algorithms", credits: 4, departmentId: cs.id },
-    { id: newId("crs"), code: "CS301", title: "Database Systems", credits: 3, departmentId: cs.id },
-    { id: newId("crs"), code: "MATH101", title: "Calculus I", credits: 3, departmentId: math.id },
-    { id: newId("crs"), code: "ENG101", title: "Introduction to Literature", credits: 3, departmentId: eng.id },
+  const [cs101, cs201, cs301, math101, eng101] = await db
+    .insert(courses)
+    .values([
+      { id: newId("crs"), code: "CS101", title: "Introduction to Programming", credits: 3, departmentId: cs.id },
+      { id: newId("crs"), code: "CS201", title: "Data Structures & Algorithms", credits: 4, departmentId: cs.id },
+      { id: newId("crs"), code: "CS301", title: "Database Systems", credits: 3, departmentId: cs.id },
+      { id: newId("crs"), code: "MATH101", title: "Calculus I", credits: 3, departmentId: math.id },
+      { id: newId("crs"), code: "ENG101", title: "Introduction to Literature", credits: 3, departmentId: eng.id },
+    ])
+    .returning();
+
+  // Curriculum: which courses count as core requirements for each program.
+  // Real deployments would load this from the registrar's approved curricula.
+  await db.insert(programRequirements).values([
+    { id: newId("preq"), programId: bsccs.id, courseId: cs101.id, category: "core" },
+    { id: newId("preq"), programId: bsccs.id, courseId: cs201.id, category: "core" },
+    { id: newId("preq"), programId: bsccs.id, courseId: cs301.id, category: "core" },
+    { id: newId("preq"), programId: bscmath.id, courseId: math101.id, category: "core" },
+    { id: newId("preq"), programId: baeng.id, courseId: eng101.id, category: "core" },
   ]);
 
   await db.insert(rooms).values([
